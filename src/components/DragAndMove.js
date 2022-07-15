@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 
-function DraggableContainer({ children, onClick }) {
+function DragAndMove({
+    children,
+    onClick = () => {},
+    position,
+    setPosition,
+    style,
+}) {
     const [isActive, setIsActive] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const [anchorPoint, setAnchorPoint] = useState([]);
-    const [position, setPosition] = useState([0, 0]);
 
     const handleMouseMove = (e) => {
         if (!isActive) return;
@@ -12,6 +18,7 @@ function DraggableContainer({ children, onClick }) {
         const [posX, posY] = anchorPoint;
 
         setPosition([clientX - posX, clientY - posY]);
+        setIsDragging(true);
     };
 
     const handleMouseDown = (e) => {
@@ -24,15 +31,10 @@ function DraggableContainer({ children, onClick }) {
     };
 
     const handleMouseUp = () => {
-        setIsActive(false);
-    };
+        if (!isDragging) onClick();
 
-    const style = {
-        position: "absolute",
-        cursor: "pointer",
-        backgroundColor: isActive ? "red" : "blue",
-        left: position[0],
-        top: position[1],
+        setIsActive(false);
+        setIsDragging(false);
     };
 
     return (
@@ -40,12 +42,11 @@ function DraggableContainer({ children, onClick }) {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            onClick={onClick}
-            style={style}
+            style={{ ...style, cursor: "pointer" }}
         >
             {children}
         </div>
     );
 }
 
-export default DraggableContainer;
+export default DragAndMove;
