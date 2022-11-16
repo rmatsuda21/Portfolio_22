@@ -2,7 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 
 export const Minesweeper = () => {
-  const [mineCoords, setMineCoords] = useState<number[][]>();
+  // const [mineCoords, setMineCoords] = useState<number[][]>();
 
   return <Minesweeper.Container>Minesweeper</Minesweeper.Container>;
 };

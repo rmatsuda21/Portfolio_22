@@ -5,9 +5,7 @@ import { Home } from "../pages/Home";
 import { ThemeNames, themes } from "../styles/theme";
 
 function App() {
-  const [selectedTheme, setSelectedTheme] = useState<ThemeNames>(
-    ThemeNames.SOLARIZED_DARK
-  );
+  const [selectedTheme, _] = useState<ThemeNames>(ThemeNames.SOLARIZED_DARK);
 
   return (
     <div className="App">
