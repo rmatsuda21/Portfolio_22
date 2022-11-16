@@ -11,6 +11,16 @@ function App() {
 
   return (
     <div className="App">
+      {/* <button
+        onClick={() => {
+          const keys = Object.keys(ThemeNames);
+          setSelectedTheme(
+            Object(ThemeNames)[keys[Math.floor(Math.random() * keys.length)]]
+          );
+        }}
+      >
+        CLICK
+      </button> */}
       <ThemeProvider theme={themes[selectedTheme]}>
         <Routes>
           <Route path="/" element={<Home />} />

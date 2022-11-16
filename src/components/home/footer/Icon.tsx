@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import logo from "../../../images/logo.png";
 
 export const Icon = ({
   $footerHeight,
@@ -10,7 +11,7 @@ export const Icon = ({
   return (
     <Icon.Icon onClick={onClick}>
       <img
-        src={require("../../../images/logo.png")}
+        src={logo}
         alt="logo"
         width={`${$footerHeight - 10}px`}
         height={`${$footerHeight - 10}px`}

@@ -7,12 +7,14 @@ export interface IWindowProps {
   children?: ReactNode;
   $zIndex: number;
   reorderWindows: () => void;
+  closeWindows: () => void;
 }
 
 export const Window = ({
   title,
   $zIndex,
   reorderWindows,
+  closeWindows,
   children,
 }: IWindowProps) => {
   return (
@@ -23,6 +25,7 @@ export const Window = ({
       >
         <Window.DraggableContainerHeader className="windowHandle">
           <Window.Title>{title}</Window.Title>
+          <Window.CloseBtn onClick={closeWindows}>X</Window.CloseBtn>
         </Window.DraggableContainerHeader>
         <Window.Content>{children}</Window.Content>
       </Window.DraggableContainer>
@@ -44,16 +47,35 @@ Window.DraggableContainer = styled.div<{ $zIndex: number }>`
 
 Window.DraggableContainerHeader = styled.div`
   width: 100%;
-  padding-block: 10px;
+  height: 30px;
 
   background-color: ${({ theme }) => theme.background2};
   color: ${({ theme }) => theme.text};
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 Window.Title = styled.h1`
   margin-inline: 5px;
   text-transform: uppercase;
   overflow: hidden;
+`;
+
+Window.CloseBtn = styled.div`
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: rgba(255, 20, 20, 0.6);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(255, 20, 20, 0.8);
+  }
 `;
 
 Window.Content = styled.div`
