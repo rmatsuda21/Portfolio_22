@@ -5,11 +5,13 @@ import { Home } from "../pages/Home";
 import { ThemeNames, themes } from "../styles/theme";
 
 function App() {
-  const [selectedTheme, _] = useState<ThemeNames>(ThemeNames.SOLARIZED_DARK);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeNames>(
+    ThemeNames.SOLARIZED_DARK
+  );
 
   return (
     <div className="App">
-      {/* <button
+      <button
         onClick={() => {
           const keys = Object.keys(ThemeNames);
           setSelectedTheme(
@@ -18,7 +20,7 @@ function App() {
         }}
       >
         CLICK
-      </button> */}
+      </button>
       <ThemeProvider theme={themes[selectedTheme]}>
         <Routes>
           <Route path="/" element={<Home />} />
