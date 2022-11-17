@@ -1,13 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Realtime } from "ably";
 import { Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
+
 import { Home } from "../pages/Home";
 import { ThemeNames, themes } from "../styles/theme";
+
+const ably = new Realtime(process.env.REACT_APP_ABLY_KEY as string);
+const channel = ably.channels.get("channel1");
 
 function App() {
   const [selectedTheme, setSelectedTheme] = useState<ThemeNames>(
     ThemeNames.SOLARIZED_DARK
   );
+
+  useEffect(() => {
+    channel.subscribe("test", (event) => {
+      console.log("Got message", event.data);
+    });
+
+    return () => {
+      channel.detach();
+    };
+  }, []);
 
   return (
     <div className="App">
@@ -20,6 +35,13 @@ function App() {
         }}
       >
         CLICK
+      </button>
+      <button
+        onClick={() => {
+          channel.publish("greeting", "hello");
+        }}
+      >
+        CLICK ME
       </button>
       <ThemeProvider theme={themes[selectedTheme]}>
         <Routes>
