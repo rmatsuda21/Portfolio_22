@@ -7,4 +7,11 @@
 body {
   font-variant-ligatures: none;
   font-family: "PressStart";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input {
+  font-variant-ligatures: none;
+  font-family: "PressStart";
 }

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
-const GRID_SIZE = 25;
 enum Directions {
   UP,
   DOWN,
@@ -16,7 +15,8 @@ const isOnTop = (coord1: number[], coord2: number[]) => {
 const moveSnake = (
   snakeCoords: number[][],
   foodCoords: number[][],
-  direction: Directions
+  direction: Directions,
+  gridSize: number
 ) => {
   let prevSnakeCoord = [...snakeCoords[0]];
 
@@ -24,19 +24,19 @@ const moveSnake = (
   switch (direction) {
     case Directions.UP:
       snakeCoords[0][1] -= 1;
-      if (snakeCoords[0][1] < 0) snakeCoords[0][1] = GRID_SIZE - 1;
+      if (snakeCoords[0][1] < 0) snakeCoords[0][1] = gridSize - 1;
       break;
     case Directions.DOWN:
       snakeCoords[0][1] += 1;
-      if (snakeCoords[0][1] >= GRID_SIZE) snakeCoords[0][1] = 0;
+      if (snakeCoords[0][1] >= gridSize) snakeCoords[0][1] = 0;
       break;
     case Directions.RIGHT:
       snakeCoords[0][0] += 1;
-      if (snakeCoords[0][0] >= GRID_SIZE) snakeCoords[0][0] = 0;
+      if (snakeCoords[0][0] >= gridSize) snakeCoords[0][0] = 0;
       break;
     case Directions.LEFT:
       snakeCoords[0][0] -= 1;
-      if (snakeCoords[0][0] < 0) snakeCoords[0][0] = GRID_SIZE - 1;
+      if (snakeCoords[0][0] < 0) snakeCoords[0][0] = gridSize - 1;
       break;
   }
 
@@ -51,8 +51,8 @@ const moveSnake = (
   for (let i = 0; i < foodCoords.length; ++i) {
     if (isOnTop(foodCoords[i], snakeCoords[0])) {
       foodCoords[i] = [
-        Math.floor(Math.random() * GRID_SIZE),
-        Math.floor(Math.random() * GRID_SIZE),
+        Math.floor(Math.random() * gridSize),
+        Math.floor(Math.random() * gridSize),
       ];
 
       snakeCoords.push([...foodCoords[i]]);
@@ -62,21 +62,58 @@ const moveSnake = (
   return [...snakeCoords];
 };
 
-export const Snake = () => {
+const fixFoodCoords = (
+  prevCoords: number[][],
+  gridSize: number
+): number[][] => {
+  const coords: number[][] = JSON.parse(JSON.stringify(prevCoords));
+
+  for (let i = 0; i < coords.length; ++i) {
+    coords[i][0] = Math.min(gridSize - 1, coords[i][0]);
+    coords[i][1] = Math.min(gridSize - 1, coords[i][1]);
+  }
+
+  return coords;
+};
+
+export interface ISnakeProps {
+  gridSize?: number;
+}
+
+export const Snake = ({ gridSize = 20 }: ISnakeProps) => {
   const [snakeCoords, setSnakeCoords] = useState<number[][]>([
-    [Math.floor(GRID_SIZE / 2) + 1, Math.floor(GRID_SIZE / 2)],
-    [Math.floor(GRID_SIZE / 2), Math.floor(GRID_SIZE / 2)],
+    [Math.floor(gridSize / 2) + 1, Math.floor(gridSize / 2)],
+    [Math.floor(gridSize / 2), Math.floor(gridSize / 2)],
   ]);
   const foodCoords = useRef([
     [
-      Math.floor(Math.random() * GRID_SIZE),
-      Math.floor(Math.random() * GRID_SIZE),
+      Math.floor(Math.random() * gridSize),
+      Math.floor(Math.random() * gridSize),
     ],
   ]);
-
   const [gameActive, setGameActive] = useState(false);
   const dirRef = useRef<Directions>(Directions.RIGHT);
   const gameOver = useRef(false);
+  const gridSizeRef = useRef(gridSize);
+
+  const resetGame = (gameActive = true) => {
+    setSnakeCoords([
+      [Math.floor(gridSize / 2) + 1, Math.floor(gridSize / 2)],
+      [Math.floor(gridSize / 2), Math.floor(gridSize / 2)],
+    ]);
+    foodCoords.current = [
+      [
+        Math.floor(Math.random() * gridSize),
+        Math.floor(Math.random() * gridSize),
+      ],
+    ];
+    setGameActive(gameActive);
+  };
+
+  if (gridSize !== gridSizeRef.current) {
+    gridSizeRef.current = gridSize;
+    resetGame(gameActive);
+  }
 
   useEffect(() => {
     for (let i = 1; i < snakeCoords.length; ++i) {
@@ -91,7 +128,12 @@ export const Snake = () => {
     if (gameActive) {
       const intervalId = setInterval(() => {
         setSnakeCoords((prevSnakeCoords) =>
-          moveSnake(prevSnakeCoords, foodCoords.current, dirRef.current)
+          moveSnake(
+            prevSnakeCoords,
+            foodCoords.current,
+            dirRef.current,
+            gridSize
+          )
         );
       }, 150);
 
@@ -122,12 +164,8 @@ export const Snake = () => {
           break;
         case "Escape":
           if (gameOver.current) {
-            setSnakeCoords([
-              [Math.floor(GRID_SIZE / 2) + 1, Math.floor(GRID_SIZE / 2)],
-              [Math.floor(GRID_SIZE / 2), Math.floor(GRID_SIZE / 2)],
-            ]);
+            resetGame();
             gameOver.current = false;
-            setGameActive(true);
           } else {
             setGameActive((prevGameActive) => !prevGameActive);
           }
@@ -158,7 +196,11 @@ export const Snake = () => {
   ));
 
   return (
-    <Snake.Container tabIndex={-1} onKeyDown={handleKeyDown}>
+    <Snake.Container
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+      $gridSize={gridSize}
+    >
       {(!gameActive || gameOver.current) && (
         <Snake.Overlay>
           {gameOver.current ? (
@@ -184,7 +226,7 @@ export const Snake = () => {
   );
 };
 
-Snake.Container = styled.div`
+Snake.Container = styled.div<{ $gridSize: number }>`
   position: relative;
   background-color: ${({ theme }) => theme.background};
 
@@ -192,8 +234,8 @@ Snake.Container = styled.div`
   height: 500px;
 
   display: grid;
-  grid-template-columns: repeat(${GRID_SIZE}, 1fr);
-  grid-template-rows: repeat(${GRID_SIZE}, 1fr);
+  grid-template-columns: repeat(${({ $gridSize }) => $gridSize}, 1fr);
+  grid-template-rows: repeat(${({ $gridSize }) => $gridSize}, 1fr);
   gap: 3px;
   overflow: hidden;
 `;

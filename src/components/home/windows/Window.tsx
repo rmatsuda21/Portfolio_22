@@ -1,6 +1,8 @@
-import { ReactNode } from "react";
+import { Component, ReactNode, useState } from "react";
 import Draggable from "react-draggable";
 import styled from "styled-components";
+import { WindowMenu } from "./WindowMenu";
+const Color = require("color");
 
 export interface IWindowProps {
   title: string;
@@ -8,6 +10,8 @@ export interface IWindowProps {
   $zIndex: number;
   reorderWindows: () => void;
   closeWindows: () => void;
+  Component: React.FC;
+  props: Object;
 }
 
 export const Window = ({
@@ -15,8 +19,16 @@ export const Window = ({
   $zIndex,
   reorderWindows,
   closeWindows,
-  children,
+  Component,
+  props,
 }: IWindowProps) => {
+  const [componentProps, setComponentProps] = useState(props);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleMenuClick = () => {
+    setMenuOpen((prevMenuOpen) => !prevMenuOpen);
+  };
+
   return (
     <Draggable handle=".windowHandle">
       <Window.DraggableContainer
@@ -24,10 +36,16 @@ export const Window = ({
         onPointerDown={reorderWindows}
       >
         <Window.DraggableContainerHeader className="windowHandle">
-          <Window.Title>{title}</Window.Title>
+          <Window.Title onClick={handleMenuClick}>{title}</Window.Title>
           <Window.CloseBtn onClick={closeWindows}>X</Window.CloseBtn>
+          {menuOpen && (
+            <WindowMenu
+              componentProps={componentProps}
+              setComponentProps={setComponentProps}
+            />
+          )}
         </Window.DraggableContainerHeader>
-        <Window.Content>{children}</Window.Content>
+        <Window.Content>{Component({ ...componentProps })}</Window.Content>
       </Window.DraggableContainer>
     </Draggable>
   );
@@ -52,15 +70,26 @@ Window.DraggableContainerHeader = styled.div`
   background-color: ${({ theme }) => theme.background2};
   color: ${({ theme }) => theme.text};
 
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
 `;
 
-Window.Title = styled.h1`
+Window.Title = styled.div`
   margin-inline: 5px;
   text-transform: uppercase;
   overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  height: 100%;
+
+  &:hover {
+    background-color: ${({ theme }) =>
+      Color(theme.background2).lighten(0.3).hsl().string()};
+    cursor: pointer;
+  }
 `;
 
 Window.CloseBtn = styled.div`

@@ -18,7 +18,7 @@ function App() {
     ThemeNames.SOLARIZED_DARK
   );
 
-  const [cookies, setCookie, removeCookie] = useCookies(["deviceId"]);
+  const [cookies, setCookie] = useCookies(["deviceId"]);
   setCookie("deviceId", clientId, { sameSite: "strict" });
   console.log(cookies.deviceId);
 
@@ -34,26 +34,12 @@ function App() {
 
   return (
     <div className="App">
-      <button
-        onClick={() => {
-          const keys = Object.keys(ThemeNames);
-          setSelectedTheme(
-            Object(ThemeNames)[keys[Math.floor(Math.random() * keys.length)]]
-          );
-        }}
-      >
-        CLICK
-      </button>
-      <button
-        onClick={() => {
-          channel.publish("test", "hello");
-        }}
-      >
-        CLICK ME
-      </button>
       <ThemeProvider theme={themes[selectedTheme]}>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={<Home setSelectedTheme={setSelectedTheme} />}
+          />
           <Route path="/test" element={<h1>TEST</h1>} />
         </Routes>
       </ThemeProvider>
