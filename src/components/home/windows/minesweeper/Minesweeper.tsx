@@ -253,7 +253,6 @@ export const Minesweeper = ({
   ]);
 
   useEffect(() => {
-    console.log(mineNum.current, mineCount);
     if (mineNum.current !== mineCount || gridSize !== gridSizeRef.current) {
       mineNum.current = mineCount;
       gridSizeRef.current = gridSize;

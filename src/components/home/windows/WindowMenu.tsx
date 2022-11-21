@@ -51,8 +51,6 @@ export const WindowMenu = ({
     }
   };
 
-  console.log(componentProps);
-
   return (
     <WindowMenu.Container>
       {Object.keys(componentProps).map((key, indx) => (
