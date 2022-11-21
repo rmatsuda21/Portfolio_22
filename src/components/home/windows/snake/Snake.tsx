@@ -62,20 +62,6 @@ const moveSnake = (
   return [...snakeCoords];
 };
 
-const fixFoodCoords = (
-  prevCoords: number[][],
-  gridSize: number
-): number[][] => {
-  const coords: number[][] = JSON.parse(JSON.stringify(prevCoords));
-
-  for (let i = 0; i < coords.length; ++i) {
-    coords[i][0] = Math.min(gridSize - 1, coords[i][0]);
-    coords[i][1] = Math.min(gridSize - 1, coords[i][1]);
-  }
-
-  return coords;
-};
-
 export interface ISnakeProps {
   gridSize?: number;
 }
@@ -96,19 +82,22 @@ export const Snake = ({ gridSize = 20 }: ISnakeProps) => {
   const gameOver = useRef(false);
   const gridSizeRef = useRef(gridSize);
 
-  const resetGame = (gameActive = true) => {
-    setSnakeCoords([
-      [Math.floor(gridSize / 2) + 1, Math.floor(gridSize / 2)],
-      [Math.floor(gridSize / 2), Math.floor(gridSize / 2)],
-    ]);
-    foodCoords.current = [
-      [
-        Math.floor(Math.random() * gridSize),
-        Math.floor(Math.random() * gridSize),
-      ],
-    ];
-    setGameActive(gameActive);
-  };
+  const resetGame = useCallback(
+    (gameActive = true) => {
+      setSnakeCoords([
+        [Math.floor(gridSize / 2) + 1, Math.floor(gridSize / 2)],
+        [Math.floor(gridSize / 2), Math.floor(gridSize / 2)],
+      ]);
+      foodCoords.current = [
+        [
+          Math.floor(Math.random() * gridSize),
+          Math.floor(Math.random() * gridSize),
+        ],
+      ];
+      setGameActive(gameActive);
+    },
+    [setSnakeCoords, setGameActive, foodCoords, gridSize]
+  );
 
   if (gridSize !== gridSizeRef.current) {
     gridSizeRef.current = gridSize;
@@ -141,7 +130,7 @@ export const Snake = ({ gridSize = 20 }: ISnakeProps) => {
         clearInterval(intervalId);
       };
     }
-  }, [gameActive]);
+  }, [gameActive, gridSize]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -172,7 +161,7 @@ export const Snake = ({ gridSize = 20 }: ISnakeProps) => {
           break;
       }
     },
-    []
+    [resetGame]
   );
 
   const snakePieces = snakeCoords.map(([x, y], idx) => (

@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { AppIcon } from "../components/home/AppIcon";
 import { Footer } from "../components/home/footer/Footer";
 import { ISnakeProps, Snake } from "../components/home/windows/snake/Snake";
-import { ITestProps, Test } from "../components/home/windows/Test";
 import { Window } from "../components/home/windows/Window";
 import snakeLogo from "../images/snake.png";
 import minesweeperLogo from "../images/mine.png";

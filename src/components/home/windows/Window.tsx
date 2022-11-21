@@ -1,4 +1,4 @@
-import { Component, ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 import Draggable from "react-draggable";
 import styled from "styled-components";
 import { WindowMenu } from "./WindowMenu";

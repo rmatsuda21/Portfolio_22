@@ -1,4 +1,11 @@
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import styled from "styled-components";
 import { Cell, CellState } from "./Cell";
 import { Display } from "./Display";
@@ -224,18 +231,7 @@ export const Minesweeper = ({
   const mineNum = useRef(mineCount);
   const gridSizeRef = useRef(gridSize);
 
-  useEffect(() => {
-    console.log(mineNum.current, mineCount);
-    if (mineNum.current !== mineCount || gridSize !== gridSizeRef.current) {
-      mineNum.current = mineCount;
-      gridSizeRef.current = gridSize;
-      resetGame();
-    }
-
-    return () => timerId.current && clearInterval(timerId.current);
-  }, [mineCount, gridSize]);
-
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setMineGrid(resetBoard(gridSize));
     setGameOver(false);
     setFreshBoard(true);
@@ -246,23 +242,71 @@ export const Minesweeper = ({
     if (timerId.current) {
       clearInterval(timerId.current);
     }
-  };
+  }, [
+    setMineGrid,
+    setGameOver,
+    setFreshBoard,
+    setTime,
+    setIsWin,
+    setFlaggedNum,
+    gridSize,
+  ]);
 
-  const handleOnClick = (x: number, y: number, isFreshBoard = false) => {
-    if (isWin) return;
-    if (mineGrid[x][y].state !== CellState.CLOSED) return;
+  useEffect(() => {
+    console.log(mineNum.current, mineCount);
+    if (mineNum.current !== mineCount || gridSize !== gridSizeRef.current) {
+      mineNum.current = mineCount;
+      gridSizeRef.current = gridSize;
+      resetGame();
+    }
 
-    setMineGrid((prevMineGrid) => {
-      if (isFreshBoard) {
-        timerId.current = setInterval(() => {
-          setTime((prevTime) => prevTime + 1);
-        }, 1000);
-        const { newBoard } = revealBoard(
-          placeMines(prevMineGrid, x, y, mineNum.current, gridSizeRef.current),
+    return () => timerId.current && clearInterval(timerId.current);
+  }, [mineCount, gridSize, resetGame]);
+
+  const handleOnClick = useCallback(
+    (x: number, y: number, isFreshBoard = false) => {
+      if (isWin) return;
+      if (mineGrid[x][y].state !== CellState.CLOSED) return;
+
+      setMineGrid((prevMineGrid) => {
+        if (isFreshBoard) {
+          timerId.current = setInterval(() => {
+            setTime((prevTime) => prevTime + 1);
+          }, 1000);
+          const { newBoard } = revealBoard(
+            placeMines(
+              prevMineGrid,
+              x,
+              y,
+              mineNum.current,
+              gridSizeRef.current
+            ),
+            x,
+            y,
+            gridSizeRef.current
+          );
+
+          if (checkWin(newBoard, mineNum.current, gridSizeRef.current)) {
+            clearInterval(timerId.current);
+            delete timerId.current;
+            setIsWin(true);
+          }
+
+          return newBoard;
+        }
+
+        const { newBoard, isGameOver } = revealBoard(
+          prevMineGrid,
           x,
           y,
           gridSizeRef.current
         );
+
+        if (isGameOver) {
+          clearInterval(timerId.current);
+          delete timerId.current;
+          setGameOver(true);
+        }
 
         if (checkWin(newBoard, mineNum.current, gridSizeRef.current)) {
           clearInterval(timerId.current);
@@ -271,54 +315,39 @@ export const Minesweeper = ({
         }
 
         return newBoard;
-      }
+      });
+    },
+    [isWin, mineGrid]
+  );
 
-      const { newBoard, isGameOver } = revealBoard(
-        prevMineGrid,
-        x,
-        y,
-        gridSizeRef.current
-      );
+  const handleOnContextMenu = useCallback(
+    (x: number, y: number) => {
+      if (isWin) return;
+      if (mineGrid[x][y].state === CellState.OPEN) return;
 
-      if (isGameOver) {
-        clearInterval(timerId.current);
-        delete timerId.current;
-        setGameOver(true);
-      }
+      setMineGrid((prevMineGrid) => {
+        const newBoard: IGridCell[][] = JSON.parse(
+          JSON.stringify(prevMineGrid)
+        );
+        if (newBoard[x][y].state === CellState.FLAGGED) {
+          setFlaggedNum((prevFlaggedNum) => prevFlaggedNum - 1);
+          newBoard[x][y].state = CellState.CLOSED;
+        } else {
+          setFlaggedNum((prevFlaggedNum) => prevFlaggedNum + 1);
+          newBoard[x][y].state = CellState.FLAGGED;
+        }
 
-      if (checkWin(newBoard, mineNum.current, gridSizeRef.current)) {
-        clearInterval(timerId.current);
-        delete timerId.current;
-        setIsWin(true);
-      }
+        if (checkWin(newBoard, mineNum.current, gridSizeRef.current)) {
+          clearInterval(timerId.current);
+          delete timerId.current;
+          setIsWin(true);
+        }
 
-      return newBoard;
-    });
-  };
-
-  const handleOnContextMenu = (x: number, y: number) => {
-    if (isWin) return;
-    if (mineGrid[x][y].state === CellState.OPEN) return;
-
-    setMineGrid((prevMineGrid) => {
-      const newBoard: IGridCell[][] = JSON.parse(JSON.stringify(prevMineGrid));
-      if (newBoard[x][y].state === CellState.FLAGGED) {
-        setFlaggedNum((prevFlaggedNum) => prevFlaggedNum - 1);
-        newBoard[x][y].state = CellState.CLOSED;
-      } else {
-        setFlaggedNum((prevFlaggedNum) => prevFlaggedNum + 1);
-        newBoard[x][y].state = CellState.FLAGGED;
-      }
-
-      if (checkWin(newBoard, mineNum.current, gridSizeRef.current)) {
-        clearInterval(timerId.current);
-        delete timerId.current;
-        setIsWin(true);
-      }
-
-      return newBoard;
-    });
-  };
+        return newBoard;
+      });
+    },
+    [isWin, mineGrid]
+  );
 
   const board: ReactNode[] = useMemo(() => {
     const tempBoard: ReactNode[] = [];
@@ -345,7 +374,7 @@ export const Minesweeper = ({
       }
     }
     return tempBoard;
-  }, [mineGrid, freshBoard]);
+  }, [mineGrid, freshBoard, handleOnClick, handleOnContextMenu]);
 
   let face = "😊";
   if (isWin) face = "🥳";
