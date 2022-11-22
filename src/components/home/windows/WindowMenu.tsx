@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 interface IWindowMenuProps {
-  componentProps: { [key: string]: any };
+  componentProps?: { [key: string]: any };
   setComponentProps: React.Dispatch<React.SetStateAction<Object>>;
 }
 
@@ -22,7 +22,7 @@ const typeMap = {
 };
 
 export const WindowMenu = ({
-  componentProps,
+  componentProps = {},
   setComponentProps,
 }: IWindowMenuProps) => {
   const handleOnChange = (

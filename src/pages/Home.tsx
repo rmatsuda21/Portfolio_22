@@ -11,6 +11,7 @@ import {
   Minesweeper,
 } from "../components/home/windows/minesweeper/Minesweeper";
 import { ThemeNames } from "../styles/theme";
+import { RChat } from "../components/home/windows/rchat/RChat";
 
 interface IWindowList {
   Component: React.FC;
@@ -26,12 +27,12 @@ interface IHomeProps {
 
 export const Home = ({ setSelectedTheme }: IHomeProps) => {
   const [windowList, setWindowList] = useState<IWindowList[]>([
-    // {
-    //   component: <Snake />,
-    //   title: "Snake",
-    //   zIndex: 1,
-    //   index: 0,
-    // },
+    {
+      Component: () => <RChat />,
+      title: "Snake",
+      zIndex: 1,
+      index: 0,
+    },
   ]);
   const maxId = useRef(windowList.length);
 
