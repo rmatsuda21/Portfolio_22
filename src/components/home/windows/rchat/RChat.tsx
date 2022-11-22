@@ -7,7 +7,7 @@ export const RChat = () => {
   const [channel, setChannel] = useState<Types.RealtimeChannelPromise>();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
-  const { joinChannel, deviceId } = useAbly();
+  const { ably, joinChannel, deviceId } = useAbly();
 
   useEffect(() => {
     const joinChannelAndSubscribe = async () => {

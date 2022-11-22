@@ -29,7 +29,7 @@ export const useAbly = () => {
     const connectAndSet = async () => {
       try {
         await ablyInstance.connection.once("connected");
-        setAbly(ablyInstance);
+        await setAbly(ablyInstance);
       } catch (e) {
         console.error(e);
       }
