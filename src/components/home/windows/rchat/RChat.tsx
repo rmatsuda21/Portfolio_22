@@ -20,7 +20,9 @@ export const RChat = () => {
     };
 
     joinChannelAndSubscribe();
-  }, []);
+
+    return () => channel?.detach();
+  }, [ably]);
 
   const onClickHandle = () => {
     channel?.publish("send", {
