@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
-import { useCookies } from "react-cookie";
 
 import { Home } from "../pages/Home";
 import { ThemeNames, themes } from "../styles/theme";
-import { useAbly } from "./hooks/useAbly";
 
 function App() {
   const [selectedTheme, setSelectedTheme] = useState<ThemeNames>(

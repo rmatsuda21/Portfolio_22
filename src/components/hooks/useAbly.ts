@@ -9,6 +9,8 @@ export const useAbly = () => {
   const [{ deviceId }, setCookie] = useCookies(["deviceId"]);
   const [ably, setAbly] = useState<Types.RealtimePromise>();
 
+  console.log(ably);
+
   const joinChannel = (channelId: string) => {
     return ably?.channels.get(channelId);
   };
