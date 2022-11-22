@@ -4,25 +4,25 @@ import styled from "styled-components";
 import { useAbly } from "../../../hooks/useAbly";
 
 export const RChat = () => {
-  const [channel, setChannel] = useState<Types.RealtimeChannelPromise>();
+  const [channel, setChannel] = useState<Types.RealtimeChannelCallbacks>();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
-  const { ably, joinChannel, deviceId } = useAbly();
+  const { joinChannel, deviceId } = useAbly();
 
   useEffect(() => {
-    const joinChannelAndSubscribe = async () => {
-      const channel = await joinChannel("rchat");
-      console.log(channel);
-      await setChannel(channel);
-      await channel?.subscribe("send", ({ data }: Types.Message) => {
-        setMessages((prevMessages) => [...prevMessages, data?.message]);
-      });
-    };
+    const _channel = joinChannel("rchat");
+    console.log(_channel);
+    setChannel(_channel);
+    _channel?.subscribe("send", ({ data }: Types.Message) => {
+      setMessages((prevMessages) => [...prevMessages, data?.message]);
+    });
 
-    joinChannelAndSubscribe();
+    return () => _channel?.unsubscribe("send");
+  }, [joinChannel]);
 
+  useEffect(() => {
     return () => channel?.detach();
-  }, [ably]);
+  }, [channel]);
 
   const onClickHandle = () => {
     channel?.publish("send", {
