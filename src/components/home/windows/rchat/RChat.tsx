@@ -10,7 +10,9 @@ export const RChat = () => {
   const [channelId, setChannelId] = useState("");
   const [name, setName] = useState("");
 
-  const { joinChannel } = useAbly();
+  const { joinChannel, ably } = useAbly();
+
+  console.log(Object(ably.current?.channels)["inProgress"]);
 
   useEffect(() => {
     const channel = channelRef.current;
@@ -18,8 +20,10 @@ export const RChat = () => {
     return () => channel?.detach();
   }, []);
 
-  const onSubmitHandle = () => {
-    const _channel = joinChannel(channelId);
+  const onSubmitHandle: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+
+    const _channel = joinChannel(`rchat_${channelId}`);
 
     if (!_channel) {
       alert(`Could not join room with id: ${channelId}`);
