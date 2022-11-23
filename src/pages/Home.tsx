@@ -29,7 +29,7 @@ export const Home = ({ setSelectedTheme }: IHomeProps) => {
   const [windowList, setWindowList] = useState<IWindowList[]>([
     {
       Component: () => <RChat />,
-      title: "Snake",
+      title: "RChat",
       zIndex: 1,
       index: 0,
     },
@@ -101,6 +101,11 @@ export const Home = ({ setSelectedTheme }: IHomeProps) => {
               }
             )
           }
+        />
+        <AppIcon
+          iconSrc={""}
+          name="RChat"
+          onClick={() => addWindow(() => <RChat />)}
         />
       </Home.AppIconWrapper>
       {windowList.map(({ Component, props, title, zIndex, index }) => (

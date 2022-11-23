@@ -1,5 +1,5 @@
 import { Realtime } from "ably";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
 import { v4 as uuidv4 } from "uuid";
 
@@ -9,11 +9,17 @@ export const useAbly = () => {
   const [{ deviceId }, setCookie] = useCookies(["deviceId"]);
   const ably = useRef<Realtime>();
 
-  const joinChannel = (channelId: string) => {
+  const joinChannel = useCallback((channelId: string) => {
     return ably.current?.channels.get(channelId);
-  };
+  }, []);
+
+  const getChannelPresence = useCallback((channelId: string) => {
+    return ably.current?.channels.get(channelId).presence;
+  }, []);
 
   useEffect(() => {
+    ably.current?.close();
+
     if (!deviceId) {
       const clientId = uuidv4();
       setCookie("deviceId", clientId, { sameSite: "strict" });
@@ -28,5 +34,5 @@ export const useAbly = () => {
     return () => ably.current?.close();
   }, []);
 
-  return { ably, joinChannel, deviceId };
+  return { ably, joinChannel, getChannelPresence, deviceId };
 };

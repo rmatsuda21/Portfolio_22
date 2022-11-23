@@ -1,88 +1,103 @@
 import { Types } from "ably";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useAbly } from "../../../hooks/useAbly";
+import { Chat } from "./Chat";
 
 export const RChat = () => {
-  const [channel, setChannel] = useState<Types.RealtimeChannelCallbacks>();
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
-  const { joinChannel, deviceId } = useAbly();
+  const channelRef = useRef<Types.RealtimeChannelCallbacks>();
+  const [inChannel, setInChannel] = useState(false);
+  const [channelId, setChannelId] = useState("");
+  const [name, setName] = useState("");
+
+  const { joinChannel } = useAbly();
 
   useEffect(() => {
-    const _channel = joinChannel("rchat");
-    console.log(_channel);
-    setChannel(_channel);
-    _channel?.subscribe("send", ({ data }: Types.Message) => {
-      setMessages((prevMessages) => [...prevMessages, data?.message]);
-    });
+    const channel = channelRef.current;
 
-    return () => _channel?.unsubscribe("send");
-  }, [joinChannel]);
-
-  useEffect(() => {
     return () => channel?.detach();
-  }, [channel]);
+  }, []);
 
-  const onClickHandle = () => {
-    channel?.publish("send", {
-      message,
-      deviceId,
-    });
-    setMessage("");
-  };
+  const onSubmitHandle = () => {
+    const _channel = joinChannel(channelId);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(e.target.value);
+    if (!_channel) {
+      alert(`Could not join room with id: ${channelId}`);
+      return;
+    }
+
+    _channel.presence.enter({ name });
+    channelRef.current = _channel;
+    setInChannel(true);
   };
 
   return (
     <RChat.Container>
-      <RChat.Chat>
-        {messages.map((message, indx) => (
-          <p key={indx}>{message}</p>
-        ))}
-      </RChat.Chat>
-      <RChat.Footer>
-        <input type="text" value={message} onChange={onChange} />
-        <button onClick={onClickHandle}>SEND</button>
-      </RChat.Footer>
+      {!inChannel && (
+        <RChat.JoinWindow onSubmit={onSubmitHandle}>
+          <RChat.Inputs>
+            <input
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+              placeholder="Channel ID"
+              required
+            />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              required
+            />
+          </RChat.Inputs>
+          <button type="submit">Join</button>
+        </RChat.JoinWindow>
+      )}
+      {inChannel && <Chat channelRef={channelRef} />}
     </RChat.Container>
   );
 };
 
 RChat.Container = styled.div`
   width: 400px;
+  font-size: 12px;
 `;
 
-RChat.Chat = styled.div`
+RChat.JoinWindow = styled.form`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 100%;
-  height: 400px;
-  max-height: 400px;
-
-  ${({ theme }) => `
-    color: ${theme.text};
-    background-color: ${theme.background3};
-  `}
-`;
-
-RChat.Footer = styled.div`
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  width: 100%;
+  justify-content: space-between;
+  gap: 0.25em;
   font-size: 12px;
+  height: 150px;
 
+  button,
   input {
-    flex: 1;
-    height: 20px;
+    height: 1.5em;
+    font: inherit;
   }
 
   button {
-    font: inherit;
-    padding: 0.5em;
+    margin-inline: auto;
+    width: 8em;
+    height: 4em;
+    margin-block: 1em;
+  }
+
+  button:hover {
+    cursor: pointer;
+  }
+`;
+
+RChat.Inputs = styled.div`
+  width: 100%;
+  margin-block: 20px;
+  display: flex;
+  gap: 0.5em;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  input {
+    width: 80%;
   }
 `;
