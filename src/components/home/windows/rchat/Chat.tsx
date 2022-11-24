@@ -1,5 +1,5 @@
 import { Types } from "ably";
-import { useEffect, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import { useAbly } from "../../../hooks/useAbly";
 
@@ -13,15 +13,18 @@ enum MessageType {
 interface IMessage {
   message: string;
   type: MessageType;
+  name?: string;
 }
 
 interface IChatProps {
   channelRef: React.MutableRefObject<
     Types.RealtimeChannelCallbacks | undefined
   >;
+  leaveChat: () => void;
+  name: string;
 }
 
-export const Chat = ({ channelRef }: IChatProps) => {
+export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
   const channel = channelRef.current;
   const { deviceId } = useAbly();
   const theme = useTheme();
@@ -31,6 +34,7 @@ export const Chat = ({ channelRef }: IChatProps) => {
   const [channelMembers, setChannelMembers] = useState<Types.PresenceMessage[]>(
     []
   );
+  const [showMemberList, setShowMemberList] = useState(false);
 
   const updateChannelMembers = () =>
     channel?.presence.get((_, members) => {
@@ -42,6 +46,7 @@ export const Chat = ({ channelRef }: IChatProps) => {
     const newMessage: IMessage = {
       message: data?.message,
       type: data?.type,
+      name: data?.name,
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
   };
@@ -89,6 +94,7 @@ export const Chat = ({ channelRef }: IChatProps) => {
       message,
       type: MessageType.USER_MESSAGE,
       deviceId,
+      name,
     });
     setMessage("");
   };
@@ -103,18 +109,40 @@ export const Chat = ({ channelRef }: IChatProps) => {
 
   return (
     <>
-      <Chat.MemberList>
-        {channelMembers?.map((member, indx) => (
-          <p key={indx}>{member?.data?.name}</p>
-        ))}
-      </Chat.MemberList>
+      <div>
+        <button onClick={leaveChat}>Leave</button>
+        <button onClick={() => setShowMemberList((prev) => !prev)}>
+          Member List
+        </button>
+      </div>
+      {showMemberList && (
+        <Chat.MemberList>
+          {channelMembers?.map((member, indx) => (
+            <p key={indx}>{member?.data?.name}</p>
+          ))}
+        </Chat.MemberList>
+      )}
       <Chat.Chat>
-        {messages.map(({ message, type }, indx) => {
+        {messages.map(({ message, type, name: senderName }, indx) => {
           const style: React.CSSProperties = { color: "" };
+          let sender: ReactElement = <></>;
 
           switch (type) {
             case MessageType.USER_MESSAGE:
               style.color = theme.text;
+              if (senderName)
+                sender = (
+                  <span
+                    style={{
+                      color: theme.text,
+                      backgroundColor: theme.background,
+                      marginRight: "1em",
+                      padding: ".25em",
+                    }}
+                  >
+                    {senderName}
+                  </span>
+                );
               break;
             case MessageType.JOINED_MESSAGE:
               style.color = "lightblue";
@@ -128,6 +156,7 @@ export const Chat = ({ channelRef }: IChatProps) => {
 
           return (
             <p style={style} key={indx}>
+              {sender}
               {message}
             </p>
           );
@@ -147,25 +176,41 @@ export const Chat = ({ channelRef }: IChatProps) => {
 };
 
 Chat.MemberList = styled.div`
+  position: absolute;
+  right: 0;
+
   display: flex;
-  gap: 1em;
-  width: 100%;
-  height: 1.5em;
-  padding: 0.5em;
+  flex-direction: column;
+  width: 10em;
   color: ${({ theme }) => theme.text};
+  font-size: 1em;
+  max-height: 6em;
+  overflow-y: scroll;
+
+  p {
+    padding: 0.5em;
+  }
+  p:nth-child(even) {
+    background-color: ${({ theme }) => theme.background};
+  }
+  p:nth-child(odd) {
+    background-color: ${({ theme }) => theme.background2};
+  }
 `;
 
 Chat.Chat = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 100%;
+  padding: 0.75em;
+  gap: 0.5em;
+  width: calc(100% - 1.5em);
+  max-width: calc(100% - 1.5em);
   height: 30em;
   max-height: 400px;
   overflow-y: scroll;
 
   font-size: 1em;
-  line-height: 1.25em;
+  line-height: 1.5em;
 
   ${({ theme }) => `
     color: ${theme.text};

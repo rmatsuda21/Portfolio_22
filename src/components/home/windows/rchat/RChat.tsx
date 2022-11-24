@@ -12,7 +12,7 @@ export const RChat = () => {
 
   const { joinChannel, ably } = useAbly();
 
-  console.log(Object(ably.current?.channels)["inProgress"]);
+  // console.log(Object(ably.current?.channels)["inProgress"]);
 
   useEffect(() => {
     const channel = channelRef.current;
@@ -33,6 +33,12 @@ export const RChat = () => {
     _channel.presence.enter({ name });
     channelRef.current = _channel;
     setInChannel(true);
+  };
+
+  const leaveChat = () => {
+    setInChannel(false);
+    channelRef.current?.detach();
+    delete channelRef.current;
   };
 
   return (
@@ -56,7 +62,9 @@ export const RChat = () => {
           <button type="submit">Join</button>
         </RChat.JoinWindow>
       )}
-      {inChannel && <Chat channelRef={channelRef} />}
+      {inChannel && (
+        <Chat channelRef={channelRef} leaveChat={leaveChat} name={name} />
+      )}
     </RChat.Container>
   );
 };
