@@ -4,6 +4,7 @@ import { ThemeProvider } from "styled-components";
 
 import { Home } from "../pages/Home";
 import { ThemeNames, themes } from "../styles/theme";
+import { AblyProvider } from "./hooks/AblyProvider";
 
 function App() {
   const [selectedTheme, setSelectedTheme] = useState<ThemeNames>(
@@ -12,15 +13,17 @@ function App() {
 
   return (
     <div className="App">
-      <ThemeProvider theme={themes[selectedTheme]}>
-        <Routes>
-          <Route
-            path="/"
-            element={<Home setSelectedTheme={setSelectedTheme} />}
-          />
-          <Route path="/test" element={<h1>TEST</h1>} />
-        </Routes>
-      </ThemeProvider>
+      <AblyProvider>
+        <ThemeProvider theme={themes[selectedTheme]}>
+          <Routes>
+            <Route
+              path="/"
+              element={<Home setSelectedTheme={setSelectedTheme} />}
+            />
+            <Route path="/test" element={<h1>TEST</h1>} />
+          </Routes>
+        </ThemeProvider>
+      </AblyProvider>
     </div>
   );
 }

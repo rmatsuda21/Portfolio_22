@@ -1,7 +1,7 @@
 import { Types } from "ably";
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useContext, useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
-import { useAbly } from "../../../hooks/useAbly";
+import { AblyContext, IAblyContext } from "../../../hooks/AblyProvider";
 
 enum MessageType {
   USER_MESSAGE,
@@ -26,7 +26,7 @@ interface IChatProps {
 
 export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
   const channel = channelRef.current;
-  const { deviceId } = useAbly();
+  const { deviceId } = useContext(AblyContext) as IAblyContext;
   const theme = useTheme();
 
   const [message, setMessage] = useState("");
@@ -36,50 +36,47 @@ export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
   );
   const [showMemberList, setShowMemberList] = useState(false);
 
-  const updateChannelMembers = () =>
-    channel?.presence.get((_, members) => {
-      setChannelMembers(members as Types.PresenceMessage[]);
-    });
-
-  const onMessageSend: Types.messageCallback<Types.Message> = (foo) => {
-    const { data } = foo;
-    const newMessage: IMessage = {
-      message: data?.message,
-      type: data?.type,
-      name: data?.name,
-    };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  };
-
-  const onPresenceEnter: Types.messageCallback<Types.PresenceMessage> = ({
-    data,
-  }) => {
-    updateChannelMembers();
-    const newMessage: IMessage = {
-      message: `${data?.name} has joined`,
-      type: MessageType.JOINED_MESSAGE,
-    };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  };
-
-  const onPresenceLeave: Types.messageCallback<Types.PresenceMessage> = ({
-    data,
-  }) => {
-    updateChannelMembers();
-    const newMessage: IMessage = {
-      message: `${data?.name} has left`,
-      type: MessageType.LEAVE_MESSAGE,
-    };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  };
-
   useEffect(() => {
+    const updateChannelMembers = () =>
+      channel?.presence.get((_, members) => {
+        setChannelMembers(members as Types.PresenceMessage[]);
+      });
+
+    const onMessageSend: Types.messageCallback<Types.Message> = (foo) => {
+      const { data } = foo;
+      const newMessage: IMessage = {
+        message: data?.message,
+        type: data?.type,
+        name: data?.name,
+      };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    };
+
+    const onPresenceEnter: Types.messageCallback<Types.PresenceMessage> = ({
+      data,
+    }) => {
+      updateChannelMembers();
+      const newMessage: IMessage = {
+        message: `${data?.name} has joined`,
+        type: MessageType.JOINED_MESSAGE,
+      };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    };
+
+    const onPresenceLeave: Types.messageCallback<Types.PresenceMessage> = ({
+      data,
+    }) => {
+      updateChannelMembers();
+      const newMessage: IMessage = {
+        message: `${data?.name} has left`,
+        type: MessageType.LEAVE_MESSAGE,
+      };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    };
     updateChannelMembers();
 
     channel?.subscribe("send", onMessageSend);
-
     channel?.presence.subscribe("enter", onPresenceEnter);
-
     channel?.presence.subscribe("leave", onPresenceLeave);
 
     return () => {
@@ -90,6 +87,8 @@ export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
   }, [channel]);
 
   const onSendMessage = () => {
+    if (message.trim() === "") return;
+
     channel?.publish("send", {
       message,
       type: MessageType.USER_MESSAGE,
@@ -109,12 +108,12 @@ export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
 
   return (
     <>
-      <div>
-        <button onClick={leaveChat}>Leave</button>
-        <button onClick={() => setShowMemberList((prev) => !prev)}>
+      <Chat.Header>
+        <Chat.Button onClick={leaveChat}>Leave</Chat.Button>
+        <Chat.Button onClick={() => setShowMemberList((prev) => !prev)}>
           Member List
-        </button>
-      </div>
+        </Chat.Button>
+      </Chat.Header>
       {showMemberList && (
         <Chat.MemberList>
           {channelMembers?.map((member, indx) => (
@@ -130,19 +129,7 @@ export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
           switch (type) {
             case MessageType.USER_MESSAGE:
               style.color = theme.text;
-              if (senderName)
-                sender = (
-                  <span
-                    style={{
-                      color: theme.text,
-                      backgroundColor: theme.background,
-                      marginRight: "1em",
-                      padding: ".25em",
-                    }}
-                  >
-                    {senderName}
-                  </span>
-                );
+              if (senderName) sender = <Chat.Sender>{senderName}</Chat.Sender>;
               break;
             case MessageType.JOINED_MESSAGE:
               style.color = "lightblue";
@@ -169,11 +156,18 @@ export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
           onChange={onChange}
           onKeyDown={onKeyDown}
         />
-        <button onClick={onSendMessage}>SEND</button>
+        <Chat.Button onClick={onSendMessage}>
+          <span>SEND</span>
+        </Chat.Button>
       </Chat.Footer>
     </>
   );
 };
+
+Chat.Header = styled.div`
+  display: flex;
+  height: 1.5em;
+`;
 
 Chat.MemberList = styled.div`
   position: absolute;
@@ -202,15 +196,12 @@ Chat.Chat = styled.div`
   display: flex;
   flex-direction: column;
   padding: 0.75em;
-  gap: 0.5em;
+  gap: 1em;
   width: calc(100% - 1.5em);
   max-width: calc(100% - 1.5em);
   height: 30em;
   max-height: 400px;
   overflow-y: scroll;
-
-  font-size: 1em;
-  line-height: 1.5em;
 
   ${({ theme }) => `
     color: ${theme.text};
@@ -218,20 +209,48 @@ Chat.Chat = styled.div`
   `}
 `;
 
+Chat.Sender = styled.span`
+  background-color: ${({ theme }) => theme.background};
+  color: ${({ theme }) => theme.text};
+  margin-right: 0.75em;
+  padding: 0.25em;
+  border-radius: 0.15em;
+  line-height: 0.5em;
+`;
+
 Chat.Footer = styled.div`
   display: flex;
-  gap: 5px;
   align-items: center;
   width: 100%;
+  max-width: 100%;
   font-size: 12px;
+  height: 24px;
 
   input {
     flex: 1;
-    height: 20px;
+    font-size: 12px;
+    height: 100%;
+    border: none;
+    padding-block: 0;
+    padding-inline: 3px;
   }
 
-  button {
-    font: inherit;
-    padding: 0.5em;
+  input:focus-visible {
+    outline: none;
+    background-color: rgb(210, 210, 210);
+  }
+`;
+
+Chat.Button = styled.div`
+  border-radius: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme }) => theme.accent2};
+
+  &:hover {
+    cursor: pointer;
+    filter: brightness(1.1);
   }
 `;

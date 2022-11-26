@@ -1,7 +1,7 @@
 import { Types } from "ably";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { useAbly } from "../../../hooks/useAbly";
+import { AblyContext, IAblyContext } from "../../../hooks/AblyProvider";
 import { Chat } from "./Chat";
 
 export const RChat = () => {
@@ -10,7 +10,7 @@ export const RChat = () => {
   const [channelId, setChannelId] = useState("");
   const [name, setName] = useState("");
 
-  const { joinChannel, ably } = useAbly();
+  const { getChannel, deviceId } = useContext(AblyContext) as IAblyContext;
 
   // console.log(Object(ably.current?.channels)["inProgress"]);
 
@@ -23,20 +23,29 @@ export const RChat = () => {
   const onSubmitHandle: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
 
-    const _channel = joinChannel(`rchat_${channelId}`);
+    const _channel = getChannel(`rchat_${channelId}`);
 
     if (!_channel) {
       alert(`Could not join room with id: ${channelId}`);
       return;
     }
 
-    _channel.presence.enter({ name });
-    channelRef.current = _channel;
-    setInChannel(true);
+    _channel?.presence.get((_, members) => {
+      for (let i = 0; i < (members?.length || 0); ++i)
+        if (members?.at(i)?.clientId === deviceId) {
+          alert("alert in channel");
+          return;
+        }
+
+      _channel.presence.enter({ name });
+      channelRef.current = _channel;
+      setInChannel(true);
+    });
   };
 
   const leaveChat = () => {
     setInChannel(false);
+    channelRef.current?.presence.leaveClient(deviceId);
     channelRef.current?.detach();
     delete channelRef.current;
   };
@@ -71,7 +80,6 @@ export const RChat = () => {
 
 RChat.Container = styled.div`
   width: 400px;
-  font-size: 12px;
 `;
 
 RChat.JoinWindow = styled.form`
@@ -79,19 +87,17 @@ RChat.JoinWindow = styled.form`
   flex-direction: column;
   justify-content: space-between;
   gap: 0.25em;
-  font-size: 12px;
-  height: 150px;
+  font-size: 1rem;
 
   button,
   input {
     height: 1.5em;
-    font: inherit;
   }
 
   button {
     margin-inline: auto;
     width: 8em;
-    height: 4em;
+    height: 2em;
     margin-block: 1em;
   }
 

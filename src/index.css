@@ -4,14 +4,27 @@
     url("./fonts/PressStart2P-Regular.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "DotGothic";
+  src: local("DotGothic"),
+    url("./fonts/DotGothic16-Regular.ttf") format("truetype");
+}
+
+*,
 body {
   font-variant-ligatures: none;
   font-family: "PressStart";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  font-size: 12px;
+  line-height: 12px;
 }
 
-input {
-  font-variant-ligatures: none;
-  font-family: "PressStart";
+h1 {
+  font-size: 20px;
+}
+
+h2 {
+  font-size: 18px;
 }
