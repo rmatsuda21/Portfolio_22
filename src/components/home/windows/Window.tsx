@@ -1,6 +1,7 @@
 import { ReactNode, useState } from "react";
 import Draggable from "react-draggable";
 import styled from "styled-components";
+
 import { WindowMenu } from "./WindowMenu";
 const Color = require("color");
 
@@ -37,7 +38,9 @@ export const Window = ({
       >
         <Window.DraggableContainerHeader className="windowHandle">
           <Window.Title onClick={handleMenuClick}>{title}</Window.Title>
-          <Window.CloseBtn onClick={closeWindows}>X</Window.CloseBtn>
+          <Window.CloseBtn onTouchEnd={closeWindows} onClick={closeWindows}>
+            X
+          </Window.CloseBtn>
           {menuOpen && (
             <WindowMenu
               componentProps={componentProps}

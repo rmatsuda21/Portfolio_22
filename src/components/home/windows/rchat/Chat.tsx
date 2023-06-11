@@ -166,6 +166,7 @@ export const Chat = ({ channelRef, leaveChat, name }: IChatProps) => {
 
 Chat.Header = styled.div`
   display: flex;
+  gap: 0.5em;
   height: 1.5em;
 `;
 
@@ -243,6 +244,7 @@ Chat.Footer = styled.div`
 
 Chat.Button = styled.div`
   border-radius: 0;
+  padding-inline: 0.25em;
   height: 100%;
   display: flex;
   align-items: center;

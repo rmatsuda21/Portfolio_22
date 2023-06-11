@@ -103,7 +103,7 @@ export const Home = ({ setSelectedTheme }: IHomeProps) => {
           }
         />
         <AppIcon
-          iconSrc={""}
+          iconSrc={minesweeperLogo}
           name="RChat"
           onClick={() => addWindow(() => <RChat />)}
         />

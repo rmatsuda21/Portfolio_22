@@ -238,7 +238,7 @@ Snake.Overlay = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 2rem;
 
   background-color: rgba(0, 0, 0, 0.5);
   color: white;

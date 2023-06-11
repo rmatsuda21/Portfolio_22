@@ -33,7 +33,7 @@ export const RChat = () => {
     _channel?.presence.get((_, members) => {
       for (let i = 0; i < (members?.length || 0); ++i)
         if (members?.at(i)?.clientId === deviceId) {
-          alert("alert in channel");
+          alert("Already in channel");
           return;
         }
 
@@ -49,6 +49,10 @@ export const RChat = () => {
     channelRef.current?.detach();
     delete channelRef.current;
   };
+
+  useEffect(() => {
+    return leaveChat;
+  }, []);
 
   return (
     <RChat.Container>
