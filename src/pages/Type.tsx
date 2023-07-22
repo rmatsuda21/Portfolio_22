@@ -146,7 +146,7 @@ const Type = ({ selectedTheme, setSelectedTheme }: ITypeProps) => {
       setIndex((prevIndex) => prevIndex + 1);
       setInputIncorrect(null);
 
-      if (index === wordMap.length - 1) {
+      if (index === wordMap.length - 1 && !complete) {
         setComplete(true);
         setEndTime(Date.now());
       }
