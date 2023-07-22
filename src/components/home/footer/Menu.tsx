@@ -3,15 +3,21 @@ import { ThemeNames } from "../../../styles/theme";
 
 interface IMenuProps {
   $footerHeight: number;
+  selectedTheme: string;
   setSelectedTheme: React.Dispatch<React.SetStateAction<ThemeNames>>;
 }
 
 const themeMapping: Record<ThemeNames, string> = {
   [ThemeNames.SOLARIZED_DARK]: "Solarized Dark",
   [ThemeNames.SOLARIZED_LIGHT]: "Solarized Light",
+  [ThemeNames.MONOKAI]: "Monokai",
 };
 
-export const Menu = ({ $footerHeight, setSelectedTheme }: IMenuProps) => {
+export const Menu = ({
+  $footerHeight,
+  selectedTheme = "",
+  setSelectedTheme,
+}: IMenuProps) => {
   return (
     <Menu.Menu $footerHeight={$footerHeight}>
       <h1>Menu</h1>
@@ -23,7 +29,9 @@ export const Menu = ({ $footerHeight, setSelectedTheme }: IMenuProps) => {
         >
           {Object.keys(themeMapping).map((theme) => {
             return (
-              <option value={theme}>{themeMapping[theme as ThemeNames]}</option>
+              <option value={theme} selected={theme === selectedTheme}>
+                {themeMapping[theme as ThemeNames]}
+              </option>
             );
           })}
         </select>

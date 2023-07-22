@@ -8,10 +8,11 @@ import { Menu } from "./Menu";
 const FOOTER_HEIGHT = 60;
 
 interface IFooterProps {
+  selectedTheme: string;
   setSelectedTheme: React.Dispatch<React.SetStateAction<ThemeNames>>;
 }
 
-export const Footer = ({ setSelectedTheme }: IFooterProps) => {
+export const Footer = ({ selectedTheme, setSelectedTheme }: IFooterProps) => {
   const [showMenu, setShowMenu] = useState(false);
 
   const toggleShowMenu = useCallback(() => {
@@ -23,6 +24,7 @@ export const Footer = ({ setSelectedTheme }: IFooterProps) => {
       {showMenu && (
         <Menu
           $footerHeight={FOOTER_HEIGHT}
+          selectedTheme={selectedTheme}
           setSelectedTheme={setSelectedTheme}
         />
       )}

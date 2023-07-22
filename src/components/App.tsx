@@ -19,9 +19,22 @@ function App() {
           <Routes>
             <Route
               path="/"
-              element={<Home setSelectedTheme={setSelectedTheme} />}
+              element={
+                <Home
+                  selectedTheme={selectedTheme}
+                  setSelectedTheme={setSelectedTheme}
+                />
+              }
             />
-            <Route path="/type" element={<Type />} />
+            <Route
+              path="/type"
+              element={
+                <Type
+                  selectedTheme={selectedTheme}
+                  setSelectedTheme={setSelectedTheme}
+                />
+              }
+            />
             <Route path="/test" element={<h1>TEST</h1>} />
           </Routes>
         </ThemeProvider>

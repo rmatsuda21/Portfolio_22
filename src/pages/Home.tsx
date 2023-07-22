@@ -12,6 +12,7 @@ import {
 } from "../components/home/windows/minesweeper/Minesweeper";
 import { ThemeNames } from "../styles/theme";
 import { RChat } from "../components/home/windows/rchat/RChat";
+import { useNavigate } from "react-router-dom";
 
 interface IWindowList {
   Component: React.FC;
@@ -22,10 +23,13 @@ interface IWindowList {
 }
 
 interface IHomeProps {
+  selectedTheme: string;
   setSelectedTheme: React.Dispatch<React.SetStateAction<ThemeNames>>;
 }
 
-export const Home = ({ setSelectedTheme }: IHomeProps) => {
+export const Home = ({ selectedTheme, setSelectedTheme }: IHomeProps) => {
+  const navigate = useNavigate();
+
   const [windowList, setWindowList] = useState<IWindowList[]>([
     {
       Component: () => <RChat />,
@@ -107,6 +111,11 @@ export const Home = ({ setSelectedTheme }: IHomeProps) => {
           name="RChat"
           onClick={() => addWindow(() => <RChat />)}
         />
+        <AppIcon
+          iconSrc={minesweeperLogo}
+          name="Type"
+          onClick={() => navigate("/type")}
+        />
       </Home.AppIconWrapper>
       {windowList.map(({ Component, props, title, zIndex, index }) => (
         <Window
@@ -119,7 +128,10 @@ export const Home = ({ setSelectedTheme }: IHomeProps) => {
           props={props as Object}
         />
       ))}
-      <Footer setSelectedTheme={setSelectedTheme} />
+      <Footer
+        selectedTheme={selectedTheme}
+        setSelectedTheme={setSelectedTheme}
+      />
     </Home.Wrapper>
   );
 };

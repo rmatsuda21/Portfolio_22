@@ -13,6 +13,7 @@ export interface ITheme {
 export enum ThemeNames {
   SOLARIZED_DARK = "solarizedDark",
   SOLARIZED_LIGHT = "solarizedLight",
+  MONOKAI = "monokai",
 }
 
 export const themes: Record<ThemeNames, ITheme> = {
@@ -36,6 +37,17 @@ export const themes: Record<ThemeNames, ITheme> = {
     error2: "#9b225c",
     accent: "#859900",
     accent2: "#2aa198",
+    border: "5px solid #859900",
+  },
+  monokai: {
+    background: "#171812",
+    background2: "#272822",
+    background3: "#0d0f0b",
+    text: "#f8f8f2",
+    error: "#f92672",
+    error2: "#9b225c",
+    accent: "#a6e22e",
+    accent2: "#f92672",
     border: "5px solid #859900",
   },
 };
