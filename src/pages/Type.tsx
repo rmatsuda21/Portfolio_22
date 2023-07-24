@@ -4,83 +4,13 @@ import Color from "color";
 
 import { Footer } from "../components/home/footer/Footer";
 import { ThemeNames } from "../styles/theme";
-
-interface ILanguage {
-  name: string;
-  noLazyMode: boolean;
-  orderedByFrequency: true;
-  words: string[];
-}
-
-const englishData: ILanguage = require("../languages/english.json");
-
-type CorrectType = 0 | 1 | 2 | -1;
-type CorrectClass = "active" | "correct" | "incorrect" | "";
-
-type CorrectMap = {
-  [key in CorrectType]: CorrectClass;
-};
-
-const CORRECT_MAP: CorrectMap = {
-  0: "active",
-  1: "correct",
-  2: "incorrect",
-  [-1]: "",
-};
-
-interface Map {
-  word: string;
-  correct: CorrectType;
-}
-
-const isWordCorrect = (currWord: string, answer: string): boolean => {
-  if (currWord.length > answer.length) return false;
-
-  return answer.substring(0, currWord.length) === currWord;
-};
-
-const createNewWordList = (listLength = 100) => {
-  const words: Map[] = [];
-  for (let i = 0; i < listLength; ++i) {
-    const randWord = Math.floor(Math.random() * englishData.words.length);
-    words.push({ word: englishData.words[randWord], correct: -1 });
-  }
-  return words;
-};
-
-const calculateGrossWPM = (wordMap: Map[], time: number) => {
-  if (wordMap === undefined || time <= 0) return 0;
-
-  const allTypedEntries = wordMap.reduce(
-    (acc, curr) => acc + curr.word.length,
-    0
-  );
-  const timeInMin = time / 60000;
-  console.log(allTypedEntries, time, allTypedEntries / 5 / timeInMin);
-
-  return allTypedEntries / 5 / timeInMin;
-};
-
-const addDrop = (background: string) => {
-  const container = document.getElementById("ripple-container");
-  if (container) {
-    const ripple = document.createElement("span");
-    ripple.style.left = `${Math.floor(Math.random() * window.innerWidth)}px`;
-    ripple.style.top = `${Math.floor(Math.random() * window.innerHeight)}px`;
-    ripple.style.width = ripple.style.height = `${
-      Math.floor(Math.random() * 300) + 100
-    }px`;
-    ripple.style.animation = `ripple ${
-      Math.floor(Math.random() * 400) + 500
-    }ms linear`;
-    ripple.style.backgroundColor = background;
-    ripple.classList.add("ripple");
-    ripple.addEventListener("animationend", () => {
-      ripple.remove();
-    });
-    container.appendChild(ripple);
-  }
-};
+import { CorrectType, Map } from "../components/type/typeTypes";
+import {
+  addDrop,
+  calculateWPM,
+  createNewWordList,
+  isWordCorrect,
+} from "../components/utils/typeUtils";
 
 interface ITypeProps {
   selectedTheme: string;
@@ -103,7 +33,7 @@ const Type = ({ selectedTheme, setSelectedTheme }: ITypeProps) => {
 
   const resetWordMap = () => {
     const newMap = createNewWordList(wordCount);
-    newMap[0].correct = 0;
+    newMap[0].correct = CorrectType.Active;
     setWordMap(newMap);
   };
 
@@ -132,13 +62,13 @@ const Type = ({ selectedTheme, setSelectedTheme }: ITypeProps) => {
     if (lastCharIsSpace) {
       if (index <= wordMap.length - 1) {
         if (value.trim() === answer) {
-          wordMap[index].correct = 1;
+          wordMap[index].correct = CorrectType.Correct;
         } else {
-          wordMap[index].correct = 2;
+          wordMap[index].correct = CorrectType.Incorrect;
         }
 
         if (wordMap[index + 1]) {
-          wordMap[index + 1].correct = 0;
+          wordMap[index + 1].correct = CorrectType.Active;
         }
       }
 
@@ -153,7 +83,7 @@ const Type = ({ selectedTheme, setSelectedTheme }: ITypeProps) => {
     } else {
       // Is last word?
       if (index === wordMap.length - 1 && value.trim() === answer) {
-        wordMap[index].correct = 1;
+        wordMap[index].correct = CorrectType.Correct;
         setComplete(true);
         setEndTime(Date.now());
       }
@@ -173,16 +103,24 @@ const Type = ({ selectedTheme, setSelectedTheme }: ITypeProps) => {
   };
 
   useEffect(() => {
-    const handleKeyDown = () => {
-      addDrop(Color(theme.background).lighten(0.9).alpha(0.5).rgb().toString());
-    };
-    const ref = inputRef.current;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
-    ref?.addEventListener("keydown", handleKeyDown);
+    if (!reduceMotion) {
+      const handleKeyDown = () => {
+        addDrop(
+          Color(theme.background).lighten(0.9).alpha(0.5).rgb().toString()
+        );
+      };
+      const ref = inputRef.current;
 
-    return () => {
-      ref?.removeEventListener("keydown", handleKeyDown);
-    };
+      ref?.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        ref?.removeEventListener("keydown", handleKeyDown);
+      };
+    }
   }, [inputRef, theme.background]);
 
   return (
@@ -191,15 +129,12 @@ const Type = ({ selectedTheme, setSelectedTheme }: ITypeProps) => {
       <div className="wrapper">
         <Type.Container>
           <h1>
-            WPM: {Math.round(calculateGrossWPM(wordMap, endTime - startTime))}
+            WPM: {Math.round(calculateWPM(wordMap, endTime - startTime).netWPM)}
           </h1>
           <Type.WordList>
             {wordMap.map(({ word, correct }, index) => {
               return (
-                <span
-                  key={"wordList_" + index}
-                  className={CORRECT_MAP[correct]}
-                >
+                <span key={"wordList_" + index} className={correct}>
                   {word}
                 </span>
               );
@@ -320,6 +255,7 @@ Type.Container = styled.div`
   }
 
   input {
+    border: none;
     display: block;
     padding: 0.25em 0.5em;
 

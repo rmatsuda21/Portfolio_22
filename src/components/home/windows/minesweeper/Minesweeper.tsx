@@ -7,9 +7,10 @@ import {
   useState,
 } from "react";
 import styled from "styled-components";
+import Color from "color";
+
 import { Cell, CellState } from "./Cell";
 import { Display } from "./Display";
-const Color = require("color");
 
 export interface IGridCell {
   state: CellState;
@@ -113,6 +114,9 @@ const revealBoard = (
   y: number,
   gridSize: number
 ): { newBoard: IGridCell[][]; isGameOver: boolean } => {
+  if (prevBoard[x][y].state === CellState.FLAGGED)
+    return { newBoard: prevBoard, isGameOver: false };
+
   const newBoard: IGridCell[][] = JSON.parse(JSON.stringify(prevBoard));
   if (newBoard[x][y].isMine) {
     // TODO: Show all mines
