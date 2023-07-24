@@ -22,7 +22,11 @@ export const AppIcon = ({ iconSrc, name, onClick }: IAppIcon) => {
       }}
     >
       <AppIcon.Icon>
-        <AppIcon.Image alt="app icon" src={iconSrc} width={60} height={60} />
+        {iconSrc.length > 2 ? (
+          <img alt="app icon" src={iconSrc} width={60} height={60} />
+        ) : (
+          <span>{iconSrc}</span>
+        )}
         <h1>{name}</h1>
       </AppIcon.Icon>
     </Draggable>
@@ -45,11 +49,16 @@ AppIcon.Icon = styled.div`
     text-align: center;
   }
 
+  img {
+    pointer-events: none;
+  }
+
+  span {
+    font-size: 50px;
+    line-height: 64px;
+  }
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.2);
   }
-`;
-
-AppIcon.Image = styled.img`
-  pointer-events: none;
 `;

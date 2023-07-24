@@ -107,15 +107,11 @@ export const Home = ({ selectedTheme, setSelectedTheme }: IHomeProps) => {
           }
         />
         <AppIcon
-          iconSrc={minesweeperLogo}
+          iconSrc={"💬"}
           name="RChat"
           onClick={() => addWindow(() => <RChat />)}
         />
-        <AppIcon
-          iconSrc={minesweeperLogo}
-          name="Type"
-          onClick={() => navigate("/type")}
-        />
+        <AppIcon iconSrc={"⌨️"} name="Type" onClick={() => navigate("/type")} />
       </Home.AppIconWrapper>
       {windowList.map(({ Component, props, title, zIndex, index }) => (
         <Window
